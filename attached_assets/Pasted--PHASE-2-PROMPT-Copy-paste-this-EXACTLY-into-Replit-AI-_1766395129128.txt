@@ -1,0 +1,129 @@
+**PHASE 2 PROMPT** - Copy-paste this EXACTLY into Replit AI Agent after confirming Phase 1 works:
+
+***
+
+```
+**PHASE 2: AI + Progress APIs** ✅ Phase 1 confirmed working
+
+You are building FitFeast MERN app. Phase 1 (models, auth, user profile) complete. NOW implement **PHASE 2 EXACTLY**.
+
+## 🎯 PHASE 2 DELIVERABLES (Add to existing backend/)
+```
+backend/
+├── routes/ai.js          ← NEW
+├── routes/workout.js     ← NEW  
+├── routes/diet.js        ← NEW
+├── routes/progress.js    ← NEW
+├── utils/aiLogic.js      ← NEW (OpenAI + rule-based)
+├── utils/calorieCalculator.js ← NEW
+└── postman/FitFeast-Phase2.json
+```
+
+## 🔑 REQUIRED ENDPOINTS (All PROTECTED by auth middleware)
+
+### **AI ROUTES (/api/ai)**
+```javascript
+POST /api/ai/generate-workout
+Body: {} // Uses user profile from JWT
+Response: {weekly workout plan with push/pull/legs split}
+
+POST /api/ai/generate-diet  
+Body: {}
+Response: {dailyCalories, macros, 7-day meal suggestions, groceryList}
+
+POST /api/ai/generate-recipe
+Body: {ingredients: ["chicken", "rice"], caloriesRange: , dietType: "nonveg"}
+Response: {recipeName, steps[], nutrition{}}
+
+POST /api/ai/workout-feedback
+Body: {workoutLogs: [{exercises: [...]}]}
+Response: {"Increase squats 10lbs next session", "Good consistency!"}
+```
+
+### **TRACKING ROUTES**
+```javascript
+POST /api/workouts/log
+Body: {exercises: [{name:"squat", sets:3, reps:10, weight:100, duration:45, caloriesBurned:250}]}
+
+POST /api/diets/log  
+Body: {meals: [{name:"chicken rice", calories:450, protein:35, carbs:50, fats:15}]}
+```
+
+### **PROGRESS ROUTES**
+```javascript
+GET /api/progress/summary?week=1
+GET /api/progress/discipline-score  
+GET /api/progress/grocery-list
+```
+
+## 🧠 AI LOGIC (utils/aiLogic.js) - REQUIRED
+
+**1. OpenAI Fallback to Rule-Based (MUST HAVE BOTH)**
+```javascript
+// OpenAI prompt examples:
+workoutPrompt: "Generate 7-day push/pull/legs workout for {goal} goal, {timeAvail}min sessions, {workoutLoc} equipment"
+dietPrompt: "Create 2000cal {dietPref} diet plan for {goal}. Include macros and grocery list"
+
+// Rule-based fallbacks:
+generateWorkoutFallback(user) {
+  return {
+    week: 1,
+    workoutPlan: [
+      {day: "Mon", split: "Push", exercises: ["Bench Press 3x10", "Shoulder Press 3x12"]},
+      // ... full 7 days
+    ]
+  }
+}
+```
+
+**2. Human-like Responses**
+```
+"Good progress on bench press! 💪 Add 5lbs next session"
+"Consistent 5 days - discipline score +15 points 🔥" 
+"You're crushing leg day! Consider adding deadlifts"
+```
+
+**3. Discipline Score Algorithm**
+```javascript
+score = (workoutStreak * 0.4) + (mealStreak * 0.3) + (consistency * 0.3)
+// 0-100 scale
+```
+
+## 📊 STANDARDIZED RESPONSES (ALL endpoints)
+```json
+{ "success": true, "data": {...}, "message": "Workout plan generated!" }
+{ "success": false, "error": "Missing user profile data" }
+```
+
+## 🧪 POSTMAN COLLECTION (FitFeast-Phase2.json)
+Test ALL 9 new endpoints with:
+- Valid JWT from Phase 1 login
+- Realistic workout/diet data
+- Expected AI responses
+
+## ✅ PHASE 2 SUCCESS CRITERIA
+```
+[ ] All 9 endpoints return correct data
+[ ] OpenAI works OR rule-based fallback activates  
+[ ] Postman collection passes all tests
+[ ] server.js routes updated with new imports
+[ ] No breaking changes to Phase 1
+```
+
+## 🚀 NEXT STEPS
+After Phase 2 works:
+1. Test: npm run dev → Postman all endpoints
+2. Reply: "**Phase 2 COMPLETE ✅ Phase 3 ready**"
+
+**IMPLEMENT PHASE 2 NOW. Add ONLY to existing Phase 1 code. Keep server.js routes updated.**
+```
+
+***
+
+## 🚀 USAGE IN REPLIT:
+1. **Phase 1 working** → Paste this Phase 2 prompt
+2. AI builds new routes/utils  
+3. Test with Postman collection
+4. **When ALL endpoints work** → Say: "Phase 2 COMPLETE ✅ Phase 3 ready"
+
+**Phase 3 will be frontend** - your app will be 60% done! 🔥

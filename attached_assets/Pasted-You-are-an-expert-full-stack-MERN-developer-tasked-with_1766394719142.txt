@@ -1,0 +1,156 @@
+You are an expert full-stack MERN developer tasked with building **FitFeast**, a production-ready fitness and nutrition app. **IMPORTANT: Generate the project in PHASES. Wait for confirmation before moving to the next phase.** This prevents bugs, truncation, and ensures quality. Output COMPLETE, WORKING CODE for each phase with folder structure and testing instructions.
+
+## 🎯 PROJECT SPECIFICATIONS (Build EXACTLY This)
+
+**Core Value**: AI-personalized workout/diet plans that adapt weekly based on progress. Solves 70% fitness app dropout via data-driven personalization.
+
+**Tech Stack** (NO DEVIATIONS):
+```
+Frontend: React 18 + Tailwind CSS + React Router + Axios + Recharts + TensorFlow.js
+Backend: Node.js + Express + MongoDB (Mongoose) + JWT + bcrypt + Multer
+AI: OpenAI API (fallback: rule-based logic in utils/aiLogic.js)
+Deployment: Vercel (FE) + Render (BE) + MongoDB Atlas
+```
+
+## 🗄️ DATABASE SCHEMAS (MongoDB/Mongoose - EXACT FIELDS)
+
+```javascript
+// models/User.js
+const userSchema = {
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  age: Number, gender: String, height: Number, weight: Number,
+  goal: { type: String, enum: ['fatLoss', 'muscleGain', 'maintenance'] },
+  dietPref: { type: String, enum: ['veg', 'nonveg', 'vegan'] },
+  workoutLoc: { type: String, enum: ['home', 'gym'] },
+  timeAvail: { type: Number, enum: [20, 40, 60] },
+  disciplineScore: { type: Number, default: 0 },
+  streak: { workouts: { type: Number, default: 0 }, meals: { type: Number, default: 0 } },
+  createdAt: { type: Date, default: Date.now }
+};
+
+// models/WorkoutLog.js, DietLog.js, Plan.js (same as previous prompt)
+```
+
+## 📋 STANDARDIZED API RESPONSES (ALL Endpoints)
+```json
+{ "success": true/false, "data": {}, "message": "string", "error": "string" }
+```
+
+## 🚀 PHASED IMPLEMENTATION (Execute ONE Phase Per Response)
+
+### **PHASE 1: Backend Foundation (Models + Auth + Core APIs)**
+```
+Deliverables:
+✅ backend/ folder with models, auth routes, user routes
+✅ server.js fully working
+✅ package.json + .env.example
+✅ Postman collection for Phase 1
+✅ MongoDB Atlas setup instructions
+```
+**Endpoints**: register, login, GET/PUT /profile
+
+### **PHASE 2: AI + Progress APIs**
+```
+✅ ai.js, workout.js, diet.js, progress.js routes
+✅ utils/aiLogic.js (OpenAI + rule-based fallback)
+✅ Mock AI responses that feel human
+```
+**Endpoints**: generate-workout, generate-diet, log workout/diet, progress summary
+
+### **PHASE 3: Frontend Core (Auth + Dashboard + Forms)**
+```
+✅ frontend/ with AuthContext, Login/Register/Profile/Dashboard
+✅ Tailwind responsive UI
+✅ API integration working
+```
+
+### **PHASE 4: Advanced Features (Charts + Form Analysis)**
+```
+✅ Recharts graphs, TensorFlow.js form analysis (SIMPLIFIED pose/heuristic-based for demo)
+✅ Recipes, grocery lists, streaks
+```
+
+### **PHASE 5: Production Polish**
+```
+✅ README.md (ERD, screenshots, viva defense points)
+✅ Deployment scripts (Vercel/Render)
+✅ Full Postman collection
+✅ Error handling + loading states
+```
+
+## 🏗️ BACKEND FOLDER STRUCTURE (Phase 1 Start)
+```
+backend/
+├── models/ (User.js, WorkoutLog.js, DietLog.js, Plan.js)
+├── routes/ (auth.js, user.js, workout.js, diet.js, ai.js, progress.js)
+├── controllers/
+├── middleware/ (auth.js - JWT)
+├── utils/ (aiLogic.js, calorieCalculator.js)
+├── server.js
+├── .env.example
+├── package.json
+└── postman/FitFeast-Phase1.json
+```
+
+## 🎨 FRONTEND STRUCTURE (Phase 3 Start)
+```
+frontend/
+├── src/
+│   ├── components/ (Navbar, DashboardCard, WorkoutForm, etc.)
+│   ├── pages/ (Home, Login, Register, Profile, Tracker, Plans)
+│   ├── context/ AuthContext.jsx
+│   ├── services/ api.js
+│   ├── utils/ tfFormAnalysis.js
+│   └── App.jsx
+├── tailwind.config.js
+└── package.json
+```
+
+## 🔧 CRITICAL REQUIREMENTS (Every Phase)
+- **Mobile-first Tailwind** (sm/md/lg breakpoints)
+- **Error boundaries + loading spinners**
+- **Form validation** (zod/react-hook-form)
+- **Dark mode ready** (Tailwind dark:)
+- **AI responses feel human**: "Great job! Try adding 5lbs next session 💪"
+- **TensorFlow.js**: Simplified pose detection (heuristic-based for demo, focus on architecture)
+
+## 📋 .env.example
+```
+MONGODB_URI=mongodb+srv://...
+JWT_SECRET=supersecretkey123
+OPENAI_API_KEY=sk-...
+PORT=5000
+```
+
+## 🎯 EVALUATION DEFENSE (README Section)
+```
+Why FitFeast Wins:
+1. Personalization ← 70% dropout reduction
+2. MERN scalability ← Real-time updates
+3. AI adaptation ← Weekly plan evolution
+4. Retention hooks ← Streaks + discipline score
+Future: Wearable sync, computer vision accuracy
+```
+
+## 🚀 START WITH PHASE 1
+**Phase 1 Output Format:**
+```
+## PHASE 1 COMPLETE ✅
+
+### Folder Structure
+```
+backend/
+├── [list all files]
+```
+
+### Installation & Test
+1. npm i
+2. Create MongoDB Atlas
+3. npm run dev
+4. Postman tests: [screenshots]
+
+### Next: Reply "Phase 2 ready" for AI APIs
+```
+
+**Begin Phase 1 NOW. Make it PRODUCTION-READY from the start.**

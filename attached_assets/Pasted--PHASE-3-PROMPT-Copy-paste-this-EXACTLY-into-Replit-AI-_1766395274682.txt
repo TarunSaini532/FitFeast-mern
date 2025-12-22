@@ -1,0 +1,182 @@
+**PHASE 3 PROMPT** - Copy-paste this EXACTLY into Replit AI Agent after confirming Phase 2 works:
+
+***
+
+```
+**PHASE 3: Frontend Core (Auth + Dashboard + Forms)** ✅ Phase 2 confirmed working
+
+You are building FitFeast MERN app. Backend Phases 1-2 COMPLETE. NOW implement **PHASE 3 FRONTEND EXACTLY**.
+
+## 🎯 PHASE 3 DELIVERABLES (Create NEW frontend/)
+```
+frontend/
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── Navbar.jsx
+│   │   ├── DashboardCard.jsx
+│   │   ├── WorkoutForm.jsx
+│   │   ├── DietForm.jsx
+│   │   └── LoadingSpinner.jsx
+│   ├── pages/
+│   │   ├── Home.jsx
+│   │   ├── Login.jsx
+│   │   ├── Register.jsx
+│   │   ├── Profile.jsx
+│   │   └── Dashboard.jsx
+│   ├── context/
+│   │   └── AuthContext.jsx
+│   ├── services/
+│   │   └── api.js
+│   ├── utils/
+│   │   └── auth.js
+│   ├── App.jsx
+│   ├── index.css (Tailwind)
+│   └── main.jsx
+├── tailwind.config.js
+├── postcss.config.js
+├── vite.config.js (or CRA package.json)
+└── package.json
+```
+
+## 📦 package.json (Frontend) - EXACT
+```json
+{
+  "name": "fitfeast-frontend",
+  "dependencies": {
+    "react": "^18.2.0", "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0", "axios": "^1.6.0",
+    "jwt-decode": "^3.1.2"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.0", "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24", "vite": "^4.4.0"
+  },
+  "scripts": {
+    "dev": "vite", "build": "vite build", "preview": "vite preview"
+  }
+}
+```
+
+## 🔐 AUTH CONTEXT (src/context/AuthContext.jsx) - REQUIRED
+```jsx
+// Manages JWT, user data, login/logout
+// ProtectedRoute component included
+// Auto-refresh token check on app load
+```
+
+## 🌐 API SERVICE (src/services/api.js)
+```javascript
+// Axios instance with JWT interceptor
+// BaseURL: process.env.REACT_APP_API_URL || "http://localhost:5000/api"
+const api = axios.create({ baseURL: '/api' });
+
+// Request interceptor: add JWT header
+// Response interceptor: handle 401 logout
+```
+
+## 📱 KEY PAGES (Mobile-First Tailwind - EXACT Layouts)
+
+### **1. Login.jsx + Register.jsx**
+```
+- Clean form (email, password + profile fields for register)
+- Tailwind: max-w-md mx-auto p-8 bg-white/80 backdrop-blur
+- Error toasts + loading spinner
+- "Don't have account? Register" link
+```
+
+### **2. Dashboard.jsx** (Homepage after login)
+```
+GRID LAYOUT (Tailwind grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6):
+- Card 1: Discipline Score (85/100 🔥) [gradient bg]
+- Card 2: Current Streak (5 workouts, 4 meals)
+- Card 3: Quick Workout Log button → Modal
+- Card 4: Quick Diet Log button → Modal
+- SECTION: Quick Stats (3 Recharts graphs later in Phase 4)
+Buttons: "Generate New Plan" → /plans | "Track Progress" → /tracker
+```
+
+### **3. Profile.jsx**
+```
+Form to edit: age, weight, goal, dietPref, workoutLoc, timeAvail
+"Generate AI Workout Plan" button → POST /api/ai/generate-workout
+Display current plan summary
+```
+
+### **4. Navbar.jsx** (All pages)
+```
+Logo | Dashboard | Profile | Tracker | Plans | Logout
+Mobile: hamburger menu → slide-down
+Dark mode toggle (optional)
+```
+
+## 🛡️ PROTECTED ROUTE SYSTEM
+```jsx
+// App.jsx routes:
+<Routes>
+  <Route path="/" element={<ProtectedRoute><Dashboard/></ProtectedRoute>} />
+  <Route path="/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
+  <Route path="/login" element={<Login/>} />
+</Routes>
+```
+
+**ProtectedRoute logic**: Check localStorage JWT → redirect to login if missing/expired
+
+## 🎨 TAILWIND SETUP (Mobile-First REQUIRED)
+```css
+/* index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .card { @apply bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl p-6 border }
+  .btn-primary { @apply bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 text-white px-6 py-3 rounded-xl }
+}
+```
+
+**Responsive breakpoints**:
+- Mobile: grid-cols-1 p-4
+- Tablet: grid-cols-2 px-6
+- Desktop: grid-cols-4 max-w-7xl mx-auto
+
+## 🧪 PHASE 3 SUCCESS CRITERIA
+```
+[ ] npm install && npm run dev → Frontend loads
+[ ] Register → Backend saves user → Login works
+[ ] Dashboard shows user data from /api/users/profile
+[ ] Profile form → PUT /api/users/profile works
+[ ] All pages responsive (mobile → desktop)
+[ ] JWT auth flow: login → protected → logout
+[ ] No console errors
+```
+
+## 🚀 NEXT STEPS
+```
+1. npm run dev → localhost:5173 (Vite)
+2. Test full auth flow
+3. Backend running: localhost:5000
+4. Reply: "**Phase 3 COMPLETE ✅ Phase 4 ready**"
+```
+
+## 📱 PROD-READY FEATURES (Phase 3)
+- Loading spinners (ALL API calls)
+- Toast notifications (react-hot-toast recommended)
+- Form validation (simple HTML5 + custom)
+- Responsive navbar (mobile hamburger)
+- Dark mode classes ready (dark:bg-gray-900)
+
+**BUILD PHASE 3 FRONTEND NOW. Connect to existing Phase 1-2 backend. Make it BEAUTIFUL + FUNCTIONAL.**
+```
+
+***
+
+## 🚀 REPLIT USAGE:
+1. **Phase 2 endpoints working** → Paste Phase 3 prompt
+2. AI creates `frontend/` folder  
+3. `npm install` → `npm run dev`
+4. **Test full login → dashboard flow**
+5. **When frontend + backend talk perfectly** → Say: "Phase 3 COMPLETE ✅ Phase 4 ready"
+
+**Phase 4 = Charts + TensorFlow.js** → Your app will be 80% done and LOOKING 🔥!

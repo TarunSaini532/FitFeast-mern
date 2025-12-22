@@ -15,12 +15,33 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
+// Error handling middleware
+function errorHandler(err: any, req: any, res: any, next: any) {
+  console.error("Error:", err);
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  res.status(statusCode).json({
+    success: false,
+    error: message,
+    timestamp: new Date().toISOString(),
+  });
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   // Setup Auth (Phase 1)
   setupAuth(app, storage);
+
+  // Health check endpoint
+  app.get("/api/health", (req, res) => {
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    });
+  });
 
   // Profile Routes (Phase 1)
   app.put(api.user.updateProfile.path, requireAuth, async (req, res) => {
@@ -235,6 +256,9 @@ export async function registerRoutes(
       res.status(500).json({ success: false, error: "Failed to get grocery list" });
     }
   });
+
+  // Error handling middleware (must be last)
+  app.use(errorHandler);
 
   return httpServer;
 }

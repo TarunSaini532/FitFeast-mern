@@ -8,6 +8,9 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Home from "@/pages/Home";
 import Profile from "@/pages/Profile";
+import Tracker from "@/pages/Tracker";
+import Plans from "@/pages/Plans";
+import Recipes from "@/pages/Recipes";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 function Router() {
@@ -20,10 +23,9 @@ function Router() {
       {/* Protected Routes */}
       <ProtectedRoute path="/" component={Home} />
       <ProtectedRoute path="/profile" component={Profile} />
-
-      {/* Placeholders for future routes, redirect to home for now */}
-      <ProtectedRoute path="/workouts" component={Home} />
-      <ProtectedRoute path="/nutrition" component={Home} />
+      <ProtectedRoute path="/tracker" component={Tracker} />
+      <ProtectedRoute path="/plans" component={Plans} />
+      <ProtectedRoute path="/recipes" component={Recipes} />
 
       {/* Fallback */}
       <Route component={NotFound} />

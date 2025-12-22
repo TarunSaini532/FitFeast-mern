@@ -8,9 +8,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-    // These routes will be implemented later, added for visual structure
-    { icon: Dumbbell, label: "Workouts", href: "/workouts" },
-    { icon: Utensils, label: "Nutrition", href: "/nutrition" },
+    { icon: Dumbbell, label: "Tracker", href: "/tracker" },
+    { icon: Utensils, label: "Recipes", href: "/recipes" },
+    { icon: LayoutDashboard, label: "Plans", href: "/plans" },
     { icon: User, label: "Profile", href: "/profile" },
   ];
 

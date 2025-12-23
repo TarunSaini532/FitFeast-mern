@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, User, LogOut, Dumbbell, Utensils } from "lucide-react";
+import { LayoutDashboard, User, LogOut, Dumbbell, Utensils, Clock } from "lucide-react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { logout, user } = useAuth();
@@ -11,6 +11,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { icon: Dumbbell, label: "Tracker", href: "/tracker" },
     { icon: Utensils, label: "Recipes", href: "/recipes" },
     { icon: LayoutDashboard, label: "Plans", href: "/plans" },
+    { icon: Clock, label: "Reminders", href: "/reminders" },
     { icon: User, label: "Profile", href: "/profile" },
   ];
 

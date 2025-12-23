@@ -7,13 +7,56 @@ import { StreakTracker } from "@/components/StreakTracker";
 import { GroceryList } from "@/components/GroceryList";
 import { 
   Trophy, Flame, Calendar, Activity, 
-  ArrowRight, Plus, Dumbbell, PlayCircle, TrendingUp
+  ArrowRight, Plus, Dumbbell, PlayCircle, TrendingUp, Zap, Heart
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 
 export default function Home() {
   const { user } = useAuth();
+  
+  // Personalize based on goal
+  const goal = user?.goal;
+  const goalConfig = {
+    muscleGain: {
+      title: "💪 Muscle Gain Mode",
+      subtitle: "Focus on progressive overload and calorie surplus",
+      color: "text-yellow-500",
+      bgColor: "bg-yellow-500/10",
+      icon: Zap,
+      tips: [
+        "Increase protein intake for muscle recovery",
+        "Track progressive overload in your workouts",
+        "Maintain a slight calorie surplus",
+      ]
+    },
+    fatLoss: {
+      title: "🔥 Fat Loss Mode",
+      subtitle: "Focus on calorie deficit and consistent training",
+      color: "text-orange-500",
+      bgColor: "bg-orange-500/10",
+      icon: Flame,
+      tips: [
+        "Maintain consistent calorie deficit",
+        "Prioritize high-protein meals for satiety",
+        "Track cardio and strength training",
+      ]
+    },
+    maintenance: {
+      title: "⚖️ Maintenance Mode",
+      subtitle: "Focus on balance and consistency",
+      color: "text-blue-500",
+      bgColor: "bg-blue-500/10",
+      icon: Heart,
+      tips: [
+        "Maintain balanced macronutrient ratios",
+        "Focus on building healthy habits",
+        "Track overall wellness and energy",
+      ]
+    }
+  };
+  
+  const currentGoal = goalConfig[goal as keyof typeof goalConfig] || goalConfig.maintenance;
   
   const stats = [
     { label: "Workouts", value: "12", icon: Dumbbell, color: "text-primary" },
@@ -38,6 +81,33 @@ export default function Home() {
             </Button>
           </Link>
         </div>
+
+        {/* Goal-Based Personalization Card */}
+        {goal && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className={`${currentGoal.bgColor} border-transparent`}>
+              <CardHeader>
+                <CardTitle className={`${currentGoal.color} text-lg`}>
+                  {currentGoal.title}
+                </CardTitle>
+                <CardDescription>{currentGoal.subtitle}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {currentGoal.tips.map((tip, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className={`${currentGoal.color} font-bold mt-1`}>✓</span>
+                      <span className="text-sm">{tip}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -102,6 +172,11 @@ export default function Home() {
               <Link href="/recipes">
                 <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
                   <Calendar className="w-4 h-4 mr-2" /> Find Recipes
+                </Button>
+              </Link>
+              <Link href="/reminders">
+                <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground">
+                  <Trophy className="w-4 h-4 mr-2" /> Meal Reminders
                 </Button>
               </Link>
             </CardContent>

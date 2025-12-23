@@ -11,6 +11,7 @@ import Profile from "@/pages/Profile";
 import Tracker from "@/pages/Tracker";
 import Plans from "@/pages/Plans";
 import Recipes from "@/pages/Recipes";
+import Reminders from "@/pages/Reminders";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 function Router() {
@@ -26,6 +27,7 @@ function Router() {
       <ProtectedRoute path="/tracker" component={Tracker} />
       <ProtectedRoute path="/plans" component={Plans} />
       <ProtectedRoute path="/recipes" component={Recipes} />
+      <ProtectedRoute path="/reminders" component={Reminders} />
 
       {/* Fallback */}
       <Route component={NotFound} />

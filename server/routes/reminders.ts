@@ -14,7 +14,22 @@ export function setupReminderRoutes(app: Express) {
   // Create meal reminder
   app.post("/api/reminders/meal", requireAuth, async (req, res) => {
     try {
-      const input = insertMealReminderSchema.parse(req.body);
+      // Validate input WITHOUT userId (we extract it from authenticated user)
+      const { mealType, scheduledTime, enabled } = req.body;
+      
+      if (!mealType || !scheduledTime) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "mealType and scheduledTime are required" 
+        });
+      }
+      
+      const input = {
+        mealType,
+        scheduledTime,
+        enabled: enabled !== false, // Default to true
+      };
+      
       const reminder = await storage.createMealReminder(req.user._id, input);
       res.status(201).json({
         success: true,
@@ -22,11 +37,8 @@ export function setupReminderRoutes(app: Express) {
         message: "Reminder created successfully",
       });
     } catch (err) {
-      if (err instanceof z.ZodError) {
-        res.status(400).json(err.errors);
-      } else {
-        res.status(500).json({ success: false, error: "Failed to create reminder" });
-      }
+      console.error("Error creating reminder:", err);
+      res.status(500).json({ success: false, error: "Failed to create reminder" });
     }
   });
 

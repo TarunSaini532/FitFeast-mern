@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,15 +10,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Clock, X } from "lucide-react";
+import { Loader2, Clock, X, Bell } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { initReminderService, ReminderService } from "@/services/reminderService";
 
 export function MealReminders() {
   const [mealType, setMealType] = useState<"breakfast" | "lunch" | "dinner" | "snack">("breakfast");
   const [scheduledTime, setScheduledTime] = useState("08:00");
+  const [reminderService, setReminderService] = useState<ReminderService | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Initialize reminder service on mount
+  useEffect(() => {
+    const service = initReminderService((mealType) => {
+      toast({
+        title: "Time for your meal! 🍽️",
+        description: `It's time for ${mealType.charAt(0).toUpperCase() + mealType.slice(1)}!`,
+      });
+    });
+    setReminderService(service);
+
+    return () => {
+      service.stop();
+    };
+  }, [toast]);
 
   const { data: reminders, isLoading } = useQuery({
     queryKey: ["/api/reminders/meal"],
@@ -80,13 +97,26 @@ export function MealReminders() {
     },
   });
 
+  // Request notification permission
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
   return (
     <Card className="border-secondary/20">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-secondary" />
-          Meal Timing Reminders
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-secondary" />
+            Meal Timing Reminders
+          </CardTitle>
+          <div className="flex items-center gap-2 px-3 py-1 bg-secondary/10 rounded-lg">
+            <Bell className="w-4 h-4 text-secondary" />
+            <span className="text-xs font-medium">Notifications Active</span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Create Reminder */}
@@ -175,9 +205,20 @@ export function MealReminders() {
           </p>
         )}
 
-        <p className="text-xs text-muted-foreground">
-          💡 Tip: Set reminders for your planned meal times to maintain consistency and build discipline!
-        </p>
+        <div className="space-y-2 text-xs">
+          <p className="text-muted-foreground">
+            💡 Tip: Set reminders for your planned meal times to maintain consistency and build discipline!
+          </p>
+          <div className="bg-primary/5 border border-primary/20 rounded p-2 space-y-1">
+            <p className="font-medium text-primary">🔔 How Notifications Work:</p>
+            <ul className="text-muted-foreground list-disc list-inside space-y-0.5">
+              <li>You'll get a browser popup notification at the scheduled time</li>
+              <li>An in-app toast message will appear when you're using the app</li>
+              <li>Keep the app open or in a tab to receive notifications</li>
+              <li>Browser notifications require your permission (shown once)</li>
+            </ul>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

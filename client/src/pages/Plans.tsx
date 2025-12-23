@@ -2,16 +2,48 @@ import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useGenerateWorkout, useGenerateDiet } from "@/hooks/use-ai";
-import { Loader2, Dumbbell, Apple } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { Loader2, Dumbbell, Apple, Zap, Flame, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
 export default function Plans() {
+  const { user } = useAuth();
   const [workoutPlan, setWorkoutPlan] = useState<any>(null);
   const [dietPlan, setDietPlan] = useState<any>(null);
 
   const generateWorkout = useGenerateWorkout();
   const generateDiet = useGenerateDiet();
+
+  // Goal-based personalization config
+  const goalConfig: any = {
+    muscleGain: {
+      title: "💪 Muscle Gain Plan",
+      subtitle: "High protein, calorie surplus focus",
+      icon: Zap,
+      tips: ["Focus on progressive overload", "Higher calorie intake", "Prioritize protein (0.8-1g per lb)"],
+      color: "text-yellow-500",
+      bg: "bg-yellow-500/10"
+    },
+    fatLoss: {
+      title: "🔥 Fat Loss Plan",
+      subtitle: "Calorie deficit with lean muscle preservation",
+      icon: Flame,
+      tips: ["Maintain calorie deficit", "High protein for satiety", "Increase cardio frequency"],
+      color: "text-orange-500",
+      bg: "bg-orange-500/10"
+    },
+    maintenance: {
+      title: "⚖️ Maintenance Plan",
+      subtitle: "Balanced nutrition and fitness",
+      icon: Heart,
+      tips: ["Balanced macronutrients", "Sustainable habits", "Focus on wellness"],
+      color: "text-blue-500",
+      bg: "bg-blue-500/10"
+    }
+  };
+
+  const currentGoal = goalConfig[user?.goal || "maintenance"];
 
   const handleGenerateWorkout = async () => {
     const result = await generateWorkout.mutateAsync();
@@ -34,6 +66,30 @@ export default function Plans() {
             Personalized workout and nutrition plans generated just for you.
           </p>
         </div>
+
+        {/* Goal Context Card */}
+        {user?.goal && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className={`${currentGoal.bg} border-transparent`}>
+              <CardHeader>
+                <CardTitle className={`${currentGoal.color} text-lg`}>
+                  {currentGoal.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-3">{currentGoal.subtitle}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  {currentGoal.tips.map((tip: string, i: number) => (
+                    <div key={i} className="text-xs bg-background/50 rounded p-2">
+                      <span className={`${currentGoal.color} font-bold mr-1`}>✓</span>
+                      {tip}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Workout Plan */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

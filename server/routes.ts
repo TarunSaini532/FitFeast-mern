@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
+import { setupReminderRoutes } from "./routes/reminders";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { generateAIContent, calculateDisciplineScore } from "./utils/aiLogic";
@@ -33,6 +34,9 @@ export async function registerRoutes(
 ): Promise<Server> {
   // Setup Auth (Phase 1)
   setupAuth(app, storage);
+  
+  // Setup Reminder Routes (NEW)
+  setupReminderRoutes(app);
 
   // Health check endpoint
   app.get("/api/health", (req, res) => {
@@ -47,7 +51,7 @@ export async function registerRoutes(
   app.put(api.user.updateProfile.path, requireAuth, async (req, res) => {
     try {
       const input = api.user.updateProfile.input.parse(req.body);
-      const updatedUser = await storage.updateUser(req.user!.id, input);
+      const updatedUser = await storage.updateUser(req.user!._id, input);
       res.json(updatedUser);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -64,7 +68,7 @@ export async function registerRoutes(
 
   app.post(api.ai.generateWorkout.path, requireAuth, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user!.id);
+      const user = await storage.getUser(req.user!._id);
       if (!user) return res.status(404).json({ message: "User not found" });
 
       const aiData = await generateAIContent("workout", user);
@@ -76,7 +80,7 @@ export async function registerRoutes(
 
       // Create and save plan
       if (aiData.data) {
-        await storage.createPlan(user.id, aiData.data, {});
+        await storage.createPlan(user._id, aiData.data, {});
       }
     } catch (err) {
       res.status(500).json({ success: false, error: "Failed to generate workout" });
@@ -85,7 +89,7 @@ export async function registerRoutes(
 
   app.post(api.ai.generateDiet.path, requireAuth, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user!.id);
+      const user = await storage.getUser(req.user!._id);
       if (!user) return res.status(404).json({ message: "User not found" });
 
       // Calculate macros
@@ -108,8 +112,8 @@ export async function registerRoutes(
 
       // Save plan
       if (aiData.data) {
-        const currentPlan = await storage.getPlanByUser(user.id);
-        await storage.createPlan(user.id, currentPlan?.workoutPlan || {}, dietData);
+        const currentPlan = await storage.getPlanByUser(user._id);
+        await storage.createPlan(user._id, currentPlan?.workoutPlan || {}, dietData);
       }
     } catch (err) {
       res.status(500).json({ success: false, error: "Failed to generate diet" });
@@ -119,7 +123,7 @@ export async function registerRoutes(
   app.post(api.ai.generateRecipe.path, requireAuth, async (req, res) => {
     try {
       const input = api.ai.generateRecipe.input.parse(req.body);
-      const user = await storage.getUser(req.user!.id);
+      const user = await storage.getUser(req.user!._id);
 
       const aiData = await generateAIContent("recipe", user!, input);
       res.json({
@@ -165,7 +169,7 @@ export async function registerRoutes(
   app.post(api.workouts.log.path, requireAuth, async (req, res) => {
     try {
       const input = api.workouts.log.input.parse(req.body);
-      const log = await storage.createWorkoutLog(req.user!.id, input.exercises);
+      const log = await storage.createWorkoutLog(req.user!._id, input.exercises);
       res.status(201).json(log);
     } catch (err) {
       res.status(500).json({ message: "Failed to log workout" });
@@ -176,7 +180,7 @@ export async function registerRoutes(
     try {
       const input = api.diets.log.input.parse(req.body);
       const totalCalories = input.meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
-      const log = await storage.createDietLog(req.user!.id, input.meals, totalCalories);
+      const log = await storage.createDietLog(req.user!._id, input.meals, totalCalories);
       res.status(201).json(log);
     } catch (err) {
       res.status(500).json({ message: "Failed to log diet" });
@@ -189,7 +193,7 @@ export async function registerRoutes(
 
   app.get(api.progress.summary.path, requireAuth, async (req, res) => {
     try {
-      const summary = await storage.getProgressSummary(req.user!.id, req.query.week ? parseInt(req.query.week as string) : undefined);
+      const summary = await storage.getProgressSummary(req.user!._id, req.query.week ? parseInt(req.query.week as string) : undefined);
       res.json({
         success: true,
         data: summary,
@@ -202,7 +206,7 @@ export async function registerRoutes(
 
   app.get(api.progress.disciplineScore.path, requireAuth, async (req, res) => {
     try {
-      const summary = await storage.getProgressSummary(req.user!.id);
+      const summary = await storage.getProgressSummary(req.user!._id);
       const score = calculateDisciplineScore(
         summary.workoutStreak,
         summary.mealStreak,
@@ -228,7 +232,7 @@ export async function registerRoutes(
 
   app.get(api.progress.groceryList.path, requireAuth, async (req, res) => {
     try {
-      const plan = await storage.getPlanByUser(req.user!.id);
+      const plan = await storage.getPlanByUser(req.user!._id);
       const groceryList = plan?.dietPlan?.groceryList || [
         "Chicken breast",
         "Rice",

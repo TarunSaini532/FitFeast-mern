@@ -1,105 +1,92 @@
-import { users, workoutLogs, dietLogs, plans, InsertUser, WorkoutLog, DietLog, Plan } from "@shared/schema";
-import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { User, WorkoutLog, DietLog, Plan, MealReminder } from "./models";
+import type { InsertUser, InsertMealReminder } from "@shared/schema";
 
 export interface IStorage {
-  getUser(id: number): Promise<any | undefined>;
+  getUser(id: string): Promise<any | undefined>;
   getUserByUsername(username: string): Promise<any | undefined>;
   createUser(user: InsertUser): Promise<any>;
-  updateUser(id: number, updates: Partial<InsertUser>): Promise<any>;
-  
+  updateUser(id: string, updates: Partial<InsertUser>): Promise<any>;
+
   // Workout logs
-  createWorkoutLog(userId: number, details: any): Promise<WorkoutLog>;
-  getWorkoutLogs(userId: number): Promise<WorkoutLog[]>;
-  
+  createWorkoutLog(userId: string, details: any): Promise<any>;
+  getWorkoutLogs(userId: string): Promise<any[]>;
+
   // Diet logs
-  createDietLog(userId: number, mealDetails: any, calories?: number): Promise<DietLog>;
-  getDietLogs(userId: number): Promise<DietLog[]>;
-  
+  createDietLog(userId: string, mealDetails: any, calories?: number): Promise<any>;
+  getDietLogs(userId: string): Promise<any[]>;
+
   // Plans
-  createPlan(userId: number, workoutPlan: any, dietPlan: any): Promise<Plan>;
-  getPlanByUser(userId: number): Promise<Plan | undefined>;
-  
+  createPlan(userId: string, workoutPlan: any, dietPlan: any): Promise<any>;
+  getPlanByUser(userId: string): Promise<any | undefined>;
+
+  // Meal Reminders
+  createMealReminder(userId: string, reminder: InsertMealReminder): Promise<any>;
+  getMealReminders(userId: string): Promise<any[]>;
+  updateMealReminder(reminderId: string, updates: Partial<InsertMealReminder>): Promise<any>;
+  deleteMealReminder(reminderId: string): Promise<void>;
+
   // Progress
-  getProgressSummary(userId: number, week?: number): Promise<any>;
+  getProgressSummary(userId: string, week?: number): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<any | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+  async getUser(id: string): Promise<any | undefined> {
+    return await User.findById(id);
   }
 
   async getUserByUsername(username: string): Promise<any | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, username));
-    return user;
+    return await User.findOne({ email: username });
   }
 
   async createUser(insertUser: InsertUser): Promise<any> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
+    return await User.create(insertUser);
   }
 
-  async updateUser(id: number, updates: Partial<InsertUser>): Promise<any> {
-    const [user] = await db
-      .update(users)
-      .set(updates)
-      .where(eq(users.id, id))
-      .returning();
-    return user;
+  async updateUser(id: string, updates: Partial<InsertUser>): Promise<any> {
+    return await User.findByIdAndUpdate(id, updates, { new: true });
   }
 
-  async createWorkoutLog(userId: number, details: any): Promise<WorkoutLog> {
-    const [log] = await db
-      .insert(workoutLogs)
-      .values({
-        userId,
-        details,
-        completed: true,
-      } as any)
-      .returning();
-    return log;
+  async createWorkoutLog(userId: string, details: any): Promise<any> {
+    return await WorkoutLog.create({ userId, details, completed: true });
   }
 
-  async getWorkoutLogs(userId: number): Promise<WorkoutLog[]> {
-    return await db.select().from(workoutLogs).where(eq(workoutLogs.userId, userId));
+  async getWorkoutLogs(userId: string): Promise<any[]> {
+    return await WorkoutLog.find({ userId }).sort({ date: -1 });
   }
 
-  async createDietLog(userId: number, mealDetails: any, calories?: number): Promise<DietLog> {
-    const [log] = await db
-      .insert(dietLogs)
-      .values({
-        userId,
-        mealDetails,
-        calories: calories || 0,
-      } as any)
-      .returning();
-    return log;
+  async createDietLog(userId: string, mealDetails: any, calories?: number): Promise<any> {
+    return await DietLog.create({ userId, mealDetails, calories: calories || 0 });
   }
 
-  async getDietLogs(userId: number): Promise<DietLog[]> {
-    return await db.select().from(dietLogs).where(eq(dietLogs.userId, userId));
+  async getDietLogs(userId: string): Promise<any[]> {
+    return await DietLog.find({ userId }).sort({ date: -1 });
   }
 
-  async createPlan(userId: number, workoutPlan: any, dietPlan: any): Promise<Plan> {
-    const [plan] = await db
-      .insert(plans)
-      .values({
-        userId,
-        weekStartDate: new Date(),
-        workoutPlan,
-        dietPlan,
-      } as any)
-      .returning();
-    return plan;
+  async createPlan(userId: string, workoutPlan: any, dietPlan: any): Promise<any> {
+    return await Plan.create({ userId, weekStartDate: new Date(), workoutPlan, dietPlan });
   }
 
-  async getPlanByUser(userId: number): Promise<Plan | undefined> {
-    const [plan] = await db.select().from(plans).where(eq(plans.userId, userId));
-    return plan;
+  async getPlanByUser(userId: string): Promise<any | undefined> {
+    return await Plan.findOne({ userId }).sort({ weekStartDate: -1 });
   }
 
-  async getProgressSummary(userId: number, week?: number): Promise<any> {
+  async createMealReminder(userId: string, reminder: InsertMealReminder): Promise<any> {
+    return await MealReminder.create({ ...reminder, userId });
+  }
+
+  async getMealReminders(userId: string): Promise<any[]> {
+    return await MealReminder.find({ userId }).sort({ scheduledTime: 1 });
+  }
+
+  async updateMealReminder(reminderId: string, updates: Partial<InsertMealReminder>): Promise<any> {
+    return await MealReminder.findByIdAndUpdate(reminderId, updates, { new: true });
+  }
+
+  async deleteMealReminder(reminderId: string): Promise<void> {
+    await MealReminder.findByIdAndDelete(reminderId);
+  }
+
+  async getProgressSummary(userId: string, week?: number): Promise<any> {
     const workoutLogs = await this.getWorkoutLogs(userId);
     const dietLogs = await this.getDietLogs(userId);
 

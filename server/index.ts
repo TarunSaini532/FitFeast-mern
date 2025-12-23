@@ -60,6 +60,16 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  try {
+    // Connect to MongoDB
+    const { connectDB } = await import("./db");
+    await connectDB();
+    log("MongoDB connection established");
+  } catch (error) {
+    log("MongoDB connection failed, continuing...");
+    console.error(error);
+  }
+
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

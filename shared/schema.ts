@@ -1,82 +1,144 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// === TABLE DEFINITIONS ===
+// ========================================
+// MONGODB SCHEMAS (Mongoose-compatible)
+// ========================================
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  age: integer("age"),
-  gender: text("gender"), // 'male', 'female', 'other'
-  height: integer("height"), // in cm
-  weight: integer("weight"), // in kg
-  goal: text("goal"), // 'fatLoss', 'muscleGain', 'maintenance'
-  dietPref: text("diet_pref"), // 'veg', 'nonveg', 'vegan'
-  workoutLoc: text("workout_loc"), // 'home', 'gym'
-  timeAvail: integer("time_avail"), // 20, 40, 60 minutes
-  disciplineScore: integer("discipline_score").default(0),
-  streak: jsonb("streak").$type<{ workouts: number; meals: number }>().default({ workouts: 0, meals: 0 }),
-  createdAt: timestamp("created_at").defaultNow(),
+// User Schema
+export const userSchema = z.object({
+  _id: z.string().optional(),
+  email: z.string().email(),
+  password: z.string(),
+  age: z.number().optional(),
+  gender: z.enum(["male", "female", "other"]).optional(),
+  height: z.number().optional(),
+  weight: z.number().optional(),
+  goal: z.enum(["fatLoss", "muscleGain", "maintenance"]).optional(),
+  dietPref: z.enum(["veg", "nonveg", "vegan"]).optional(),
+  workoutLoc: z.enum(["home", "gym"]).optional(),
+  timeAvail: z.number().optional(),
+  disciplineScore: z.number().default(0),
+  streak: z.object({
+    workouts: z.number().default(0),
+    meals: z.number().default(0),
+  }).optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
-export const plans = pgTable("plans", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(), // Foreign key ref would be added in relations
-  weekStartDate: timestamp("week_start_date").notNull(),
-  workoutPlan: jsonb("workout_plan").notNull(), // AI generated structure
-  dietPlan: jsonb("diet_plan").notNull(), // AI generated structure
-  createdAt: timestamp("created_at").defaultNow(),
+// Meal Reminder Schema
+export const mealReminderSchema = z.object({
+  _id: z.string().optional(),
+  userId: z.string(),
+  mealType: z.enum(["breakfast", "lunch", "dinner", "snack"]),
+  scheduledTime: z.string(), // HH:mm format (e.g., "08:00")
+  enabled: z.boolean().default(true),
+  notificationSent: z.boolean().default(false),
+  lastNotificationDate: z.date().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
-export const workoutLogs = pgTable("workout_logs", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  date: timestamp("date").defaultNow(),
-  details: jsonb("details").notNull(), // What they actually did
-  completed: boolean("completed").default(false),
+// Workout Log Schema
+export const workoutLogSchema = z.object({
+  _id: z.string().optional(),
+  userId: z.string(),
+  date: z.date(),
+  details: z.array(z.object({
+    name: z.string(),
+    sets: z.number().optional(),
+    reps: z.number().optional(),
+    weight: z.number().optional(),
+    duration: z.number().optional(),
+    caloriesBurned: z.number().optional(),
+  })),
+  completed: z.boolean().default(false),
+  createdAt: z.date().optional(),
 });
 
-export const dietLogs = pgTable("diet_logs", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  date: timestamp("date").defaultNow(),
-  mealDetails: jsonb("meal_details").notNull(),
-  calories: integer("calories"),
+// Diet Log Schema
+export const dietLogSchema = z.object({
+  _id: z.string().optional(),
+  userId: z.string(),
+  date: z.date(),
+  mealDetails: z.array(z.object({
+    name: z.string(),
+    calories: z.number().optional(),
+    protein: z.number().optional(),
+    carbs: z.number().optional(),
+    fats: z.number().optional(),
+  })),
+  calories: z.number().optional(),
+  createdAt: z.date().optional(),
 });
 
-// === SCHEMAS ===
-
-export const insertUserSchema = createInsertSchema(users).omit({ 
-  id: true, 
-  createdAt: true, 
-  disciplineScore: true, 
-  streak: true 
+// Plan Schema
+export const planSchema = z.object({
+  _id: z.string().optional(),
+  userId: z.string(),
+  weekStartDate: z.date(),
+  workoutPlan: z.any(),
+  dietPlan: z.any(),
+  createdAt: z.date().optional(),
 });
 
-export const insertPlanSchema = createInsertSchema(plans).omit({ id: true, createdAt: true });
-export const insertWorkoutLogSchema = createInsertSchema(workoutLogs).omit({ id: true });
-export const insertDietLogSchema = createInsertSchema(dietLogs).omit({ id: true });
+// ========================================
+// TYPE EXPORTS
+// ========================================
 
-// === EXPLICIT TYPES ===
-
-export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-
-export type Plan = typeof plans.$inferSelect;
-export type WorkoutLog = typeof workoutLogs.$inferSelect;
-export type DietLog = typeof dietLogs.$inferSelect;
+export type User = z.infer<typeof userSchema>;
+export type MealReminder = z.infer<typeof mealReminderSchema>;
+export type WorkoutLog = z.infer<typeof workoutLogSchema>;
+export type DietLog = z.infer<typeof dietLogSchema>;
+export type Plan = z.infer<typeof planSchema>;
 
 // Auth specific
 export const loginSchema = z.object({
-  username: z.string().email(), // mapping email to username for passport consistency
+  username: z.string().email(),
   password: z.string(),
 });
 
-export const registerSchema = insertUserSchema.extend({
-  username: z.string().email(), // We use email as username
-});
+export const registerSchema = userSchema.extend({
+  username: z.string().email(),
+}).omit({ _id: true, createdAt: true, updatedAt: true });
 
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type RegisterRequest = z.infer<typeof registerSchema>;
+
+// Insert schemas (without auto-generated fields)
+export const insertUserSchema = userSchema.omit({
+  _id: true,
+  createdAt: true,
+  updatedAt: true,
+  disciplineScore: true,
+  streak: true,
+});
+
+export const insertMealReminderSchema = mealReminderSchema.omit({
+  _id: true,
+  createdAt: true,
+  updatedAt: true,
+  notificationSent: true,
+  lastNotificationDate: true,
+});
+
+export const insertWorkoutLogSchema = workoutLogSchema.omit({
+  _id: true,
+  createdAt: true,
+});
+
+export const insertDietLogSchema = dietLogSchema.omit({
+  _id: true,
+  createdAt: true,
+});
+
+export const insertPlanSchema = planSchema.omit({
+  _id: true,
+  createdAt: true,
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertMealReminder = z.infer<typeof insertMealReminderSchema>;
+export type InsertWorkoutLog = z.infer<typeof insertWorkoutLogSchema>;
+export type InsertDietLog = z.infer<typeof insertDietLogSchema>;
+export type InsertPlan = z.infer<typeof insertPlanSchema>;

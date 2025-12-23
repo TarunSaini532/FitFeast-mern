@@ -53,9 +53,9 @@ export function setupAuth(app: Express, storage: IStorage) {
     }),
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
+  passport.serializeUser((user, done) => done(null, user._id));
   passport.deserializeUser(async (id, done) => {
-    const user = await storage.getUser(id as number);
+    const user = await storage.getUser(id as string);
     done(null, user);
   });
 
